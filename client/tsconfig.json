@@ -13,6 +13,7 @@
     "jsx": "react-jsx",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "module": "es2020"
   }
 }
