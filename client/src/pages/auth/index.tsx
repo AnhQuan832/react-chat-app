@@ -23,6 +23,7 @@ import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import apiClient from "@/lib/api-client";
 import { LOGIN_ROUTE, REGISTER_ROUTE } from "@/utils/constant";
+import { useNavigate } from "react-router-dom";
 
 const loginFormSchema = z.object({
   email: z.string().email({
@@ -47,6 +48,8 @@ const registerFormSchema = z.object({
 
 export const Auth = () => {
   // const [loginLayout, setLoginLayout] = useState<"login" | "register">("login");
+  const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
   const login = useForm<z.infer<typeof loginFormSchema>>({
     resolver: zodResolver(loginFormSchema),
@@ -67,11 +70,13 @@ export const Auth = () => {
 
   async function onLogin(values: z.infer<typeof loginFormSchema>) {
     const response = await apiClient.post(LOGIN_ROUTE, values);
-    console.log(response.data);
+    if (response.data.user) navigate("/chat");
   }
 
   async function onRegister(values: z.infer<typeof registerFormSchema>) {
-    const response = await apiClient.post(REGISTER_ROUTE, values);
+    const response = await apiClient.post(REGISTER_ROUTE, values, {
+      withCredentials: true,
+    });
     console.log(response.data);
   }
 
