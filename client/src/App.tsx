@@ -1,8 +1,8 @@
 import "./App.css";
 import React from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { Chat } from "./pages/chat";
-import { Auth } from "./pages/auth";
+import { Chat } from "./features/chat/chat";
+import { Auth } from "./features/auth/auth";
 
 function App() {
   return (

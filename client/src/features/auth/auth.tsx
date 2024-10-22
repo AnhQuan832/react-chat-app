@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,10 +21,10 @@ import {
 } from "@/components/ui/form";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import apiClient from "@/lib/api-client";
-import { LOGIN_ROUTE, REGISTER_ROUTE } from "@/utils/constant";
 import { useNavigate } from "react-router-dom";
-
+import { useAppDispatch, useAppSelector } from "@/app/hook";
+import { login, register } from "@/utils/slices/userSlice";
+import { LoginFormField, RegisterFormField } from "@/utils/forms/authForms";
 const loginFormSchema = z.object({
   email: z.string().email({
     message: "Please enter correct email.",
@@ -47,48 +47,44 @@ const registerFormSchema = z.object({
 });
 
 export const Auth = () => {
-  // const [loginLayout, setLoginLayout] = useState<"login" | "register">("login");
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-
+  const selecter = useAppSelector((state) => state.user);
+  const { isLoggedIn } = useAppSelector((state) => state.user);
   const [showPassword, setShowPassword] = useState(false);
-  const login = useForm<z.infer<typeof loginFormSchema>>({
+  const loginForm = useForm<z.infer<typeof loginFormSchema>>({
     resolver: zodResolver(loginFormSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+    defaultValues: LoginFormField,
   });
-
-  const register = useForm<z.infer<typeof registerFormSchema>>({
+  const registerForm = useForm<z.infer<typeof registerFormSchema>>({
     resolver: zodResolver(registerFormSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-      name: "",
-    },
+    defaultValues: RegisterFormField,
   });
 
-  async function onLogin(values: z.infer<typeof loginFormSchema>) {
-    const response = await apiClient.post(LOGIN_ROUTE, values);
-    if (response.data.user) navigate("/chat");
+  // useEffect(() => {
+  //   if (isLoggedIn) {
+  //     navigate("/chat");
+  //   }
+  // }, [isLoggedIn, navigate]);
+
+  async function onLogin(values) {
+    await dispatch(login(values));
+    console.log(selecter);
   }
 
-  async function onRegister(values: z.infer<typeof registerFormSchema>) {
-    const response = await apiClient.post(REGISTER_ROUTE, values, {
-      withCredentials: true,
-    });
-    console.log(response.data);
+  async function onRegister(values) {
+    await dispatch(register(values));
   }
 
   return (
     <div className="flex items-center justify-center h-[100vh]">
       <Card className="w-full max-w-md">
-        <Tabs defaultValue="login" className="w-[100] p-1">
+        <Tabs defaultValue="loginForm" className="w-[100] p-1">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="register">Register</TabsTrigger>
+            <TabsTrigger value="loginForm">Login</TabsTrigger>
+            <TabsTrigger value="registerForm">Register</TabsTrigger>
           </TabsList>
-          <TabsContent value="login">
+          <TabsContent value="loginForm">
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-center">
                 Login
@@ -97,11 +93,11 @@ export const Auth = () => {
                 Enter your credentials to access your account
               </CardDescription>
             </CardHeader>
-            <Form {...login}>
-              <form onSubmit={login.handleSubmit(onLogin)}>
+            <Form {...loginForm}>
+              <form onSubmit={loginForm.handleSubmit(onLogin)}>
                 <CardContent className="space-y-4">
                   <FormField
-                    control={login.control}
+                    control={loginForm.control}
                     name="email"
                     render={({ field }) => (
                       <FormItem>
@@ -116,7 +112,7 @@ export const Auth = () => {
                     )}
                   />
                   <FormField
-                    control={login.control}
+                    control={loginForm.control}
                     name="password"
                     render={({ field }) => (
                       <FormItem>
@@ -166,13 +162,13 @@ export const Auth = () => {
               <a
                 href="#"
                 className="text-primary hover:underline"
-                onClick={() => setLoginLayout("register")}
+                onClick={() => setLoginLayout("registerForm")}
               >
                 Sign up
               </a>
             </div> */}
           </TabsContent>
-          <TabsContent value="register">
+          <TabsContent value="registerForm">
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-center">
                 Create Account
@@ -181,11 +177,11 @@ export const Auth = () => {
                 Enter your profile to create your account
               </CardDescription>
             </CardHeader>
-            <Form {...register}>
-              <form onSubmit={register.handleSubmit(onRegister)}>
+            <Form {...registerForm}>
+              <form onSubmit={registerForm.handleSubmit(onRegister)}>
                 <CardContent className="space-y-4">
                   <FormField
-                    control={register.control}
+                    control={registerForm.control}
                     name="email"
                     render={({ field }) => (
                       <FormItem>
@@ -200,7 +196,7 @@ export const Auth = () => {
                     )}
                   />
                   <FormField
-                    control={register.control}
+                    control={registerForm.control}
                     name="password"
                     render={({ field }) => (
                       <FormItem>
@@ -239,7 +235,7 @@ export const Auth = () => {
                     )}
                   />
                   <FormField
-                    control={register.control}
+                    control={registerForm.control}
                     name="name"
                     render={({ field }) => (
                       <FormItem>
