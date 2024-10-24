@@ -60,8 +60,11 @@ export const Auth = () => {
   });
 
   async function onLogin(values) {
-    await dispatch(login(values));
-    navigate("/chat");
+    await dispatch(login(values))
+      .unwrap()
+      .then(() => {
+        navigate("/chat");
+      });
   }
 
   async function onRegister(values) {

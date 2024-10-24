@@ -7,31 +7,31 @@ import { useAppDispatch, useAppSelector } from "./app/hook";
 import { getUserInfo } from "./utils/slices/userSlice";
 
 const PrivateRoute = ({ children }) => {
-  const userInfo = useAppSelector((state) => state.user);
-  const isAuthenticated = !!userInfo?.user?.token;
+  const { user } = useAppSelector((state) => state.user);
+  const isAuthenticated = !!user;
   return isAuthenticated ? children : <Navigate to="/auth" />;
 };
 
 const AuthRoute = ({ children }) => {
-  const userInfo = useAppSelector((state) => state.user);
-  const isAuthenticated = !!userInfo?.user?.token;
+  const { user } = useAppSelector((state) => state.user);
+  const isAuthenticated = !!user;
   return isAuthenticated ? <Navigate to="/chat" /> : children;
 };
 
 function App() {
-  const user = useAppSelector((state) => state.user);
-  const dispatch = useAppDispatch();
+  // const { user } = useAppSelector((state) => state.user);
+  // const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    const getUserData = async () => {
-      try {
-        dispatch(getUserInfo());
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    if (!user) getUserData();
-  }, []);
+  // useEffect(() => {
+  //   const getUserData = async () => {
+  //     try {
+  //       await dispatch(getUserInfo());
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   };
+  //   if (!user) getUserData();
+  // }, []);
 
   return (
     <BrowserRouter>

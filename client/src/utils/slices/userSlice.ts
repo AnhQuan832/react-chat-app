@@ -2,7 +2,6 @@ import UserApi from "@/api/userApi";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { LoginFormField, RegisterFormField } from "@/utils/forms/authForms";
 import { User } from "@/utils/User";
-import Cookies from "js-cookie";
 
 interface AuthState {
   loading: boolean;
@@ -37,6 +36,9 @@ const userSlice = createSlice({
       state.error = action.error.message;
     });
     builder.addCase(register.fulfilled, () => {});
+    builder.addCase(getUserInfo.fulfilled, (state, action) => {
+      state.user = action.payload;
+    });
   },
 });
 
@@ -57,11 +59,8 @@ export const register = createAsyncThunk(
 );
 
 export const getUserInfo = createAsyncThunk("user/user-info", async () => {
-  const token = Cookies.get("jwt");
-  if (token) {
-    const response = await UserApi.getUserInfo({ token });
-    return response;
-  }
+  const response = await UserApi.getUserInfo();
+  return response;
 });
 
 export const { setUser } = userSlice.actions;

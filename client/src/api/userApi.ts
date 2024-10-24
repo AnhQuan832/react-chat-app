@@ -9,13 +9,15 @@ const UserApi = {
     return new User(response);
   },
   register: async (params) => {
-    await apiClient.post(REGISTER_ROUTE, params);
+    const request = await apiClient.post(REGISTER_ROUTE, params);
+    const response = request.data.user;
+    return response;
   },
 
-  getUserInfo: async (params) => {
-    await apiClient.get(USER_INFO_ROUTE, {
-      headers: { Authorization: `Bearer ${params.token}` },
-    });
+  getUserInfo: async () => {
+    const request = await apiClient.get(USER_INFO_ROUTE);
+    const response = request.data.user;
+    return response;
   },
 };
 
