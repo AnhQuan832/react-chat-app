@@ -46,7 +46,7 @@ export const login = createAsyncThunk(
   "user/login",
   async (params: typeof LoginFormField) => {
     const loginData = await UserApi.login(params);
-    return loginData;
+    return loginData.data.user;
   }
 );
 

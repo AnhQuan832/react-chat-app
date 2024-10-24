@@ -1,12 +1,9 @@
 import { LOGIN_ROUTE, REGISTER_ROUTE, USER_INFO_ROUTE } from "@/utils/constant";
 import apiClient from "./axoisClient";
-import { User } from "@/utils/User";
 
 const UserApi = {
   login: async (params) => {
-    const request = await apiClient.post(LOGIN_ROUTE, params);
-    const response = request.data.user;
-    return new User(response);
+    return await apiClient.post(LOGIN_ROUTE, params);
   },
   register: async (params) => {
     const request = await apiClient.post(REGISTER_ROUTE, params);
