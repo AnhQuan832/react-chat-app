@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,7 +22,7 @@ import {
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "@/app/hook";
+import { useAppDispatch } from "@/app/hook";
 import { login, register } from "@/utils/slices/userSlice";
 import { LoginFormField, RegisterFormField } from "@/utils/forms/authForms";
 const loginFormSchema = z.object({
@@ -49,8 +49,6 @@ const registerFormSchema = z.object({
 export const Auth = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const selecter = useAppSelector((state) => state.user);
-  const { isLoggedIn } = useAppSelector((state) => state.user);
   const [showPassword, setShowPassword] = useState(false);
   const loginForm = useForm<z.infer<typeof loginFormSchema>>({
     resolver: zodResolver(loginFormSchema),
@@ -61,19 +59,14 @@ export const Auth = () => {
     defaultValues: RegisterFormField,
   });
 
-  // useEffect(() => {
-  //   if (isLoggedIn) {
-  //     navigate("/chat");
-  //   }
-  // }, [isLoggedIn, navigate]);
-
   async function onLogin(values) {
     await dispatch(login(values));
-    console.log(selecter);
+    navigate("/chat");
   }
 
   async function onRegister(values) {
     await dispatch(register(values));
+    navigate("/chat");
   }
 
   return (

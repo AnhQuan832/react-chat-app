@@ -1,53 +1,50 @@
 import UserApi from "@/api/userApi";
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { LoginFormField, RegisterFormField } from "@/utils/forms/authForms";
+import { User } from "@/utils/User";
+import Cookies from "js-cookie";
 
-interface UserState {
-  id: string | null;
-  name: string | null;
-  email: string | null;
-  isLoggedIn: boolean;
+interface AuthState {
+  loading: boolean;
+  error: string | null;
+  user: User | null;
 }
 
-const initialState: UserState = {
-  id: null,
-  name: null,
-  email: null,
-  isLoggedIn: false,
+const initialState: AuthState = {
+  loading: false,
+  error: null,
+  user: null,
 };
 
 const userSlice = createSlice({
-  name: "User",
+  name: "auth",
   initialState,
   reducers: {
-    setUser: (state, action: PayloadAction<UserState>) => {
-      state.id = action.payload.id;
-      state.name = action.payload.name;
-      state.email = action.payload.email;
-      state.isLoggedIn = action.payload.isLoggedIn;
-    },
-    clearUser: (state) => {
-      state.id = null;
-      state.name = null;
-      state.email = null;
-      state.isLoggedIn = false;
+    setUser: (state, action) => {
+      state.user = action.payload;
     },
   },
-  extraReducers(builder) {
+  extraReducers: (builder) => {
+    builder.addCase(login.pending, (state) => {
+      state.loading = true;
+    });
     builder.addCase(login.fulfilled, (state, action) => {
-      state.isLoggedIn = true;
+      state.loading = false;
+      state.user = action.payload;
     });
-    builder.addCase(register.fulfilled, (state, action) => {
-      state.isLoggedIn = true;
+    builder.addCase(login.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.error.message;
     });
+    builder.addCase(register.fulfilled, () => {});
   },
 });
 
 export const login = createAsyncThunk(
   "user/login",
   async (params: typeof LoginFormField) => {
-    const token = await UserApi.login(params);
-    return token;
+    const loginData = await UserApi.login(params);
+    return loginData;
   }
 );
 
@@ -59,6 +56,15 @@ export const register = createAsyncThunk(
   }
 );
 
-export const { setUser, clearUser } = userSlice.actions;
+export const getUserInfo = createAsyncThunk("user/user-info", async () => {
+  const token = Cookies.get("jwt");
+  if (token) {
+    const response = await UserApi.getUserInfo({ token });
+    return response;
+  }
+});
 
+export const { setUser } = userSlice.actions;
 export default userSlice.reducer;
+
+export const selectUser = (state) => state.user;
