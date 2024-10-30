@@ -39,6 +39,9 @@ const userSlice = createSlice({
     builder.addCase(getUserInfo.fulfilled, (state, action) => {
       state.user = action.payload;
     });
+    builder.addCase(logout.fulfilled, (state) => {
+      state.user = null;
+    });
   },
 });
 
@@ -61,6 +64,11 @@ export const register = createAsyncThunk(
 export const getUserInfo = createAsyncThunk("user/user-info", async () => {
   const response = await UserApi.getUserInfo();
   return response;
+});
+
+export const logout = createAsyncThunk("user/logout", async () => {
+  await UserApi.logout();
+  return;
 });
 
 export const { setUser } = userSlice.actions;
