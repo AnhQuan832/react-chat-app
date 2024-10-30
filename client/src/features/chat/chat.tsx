@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import {} from "@/components/ui/avatar";
-import { Send, Menu } from "lucide-react";
+import {
+  PaperPlaneIcon,
+  HamburgerMenuIcon,
+  Cross1Icon,
+} from "@radix-ui/react-icons";
 import { useAppSelector } from "@/app/hook";
 import {
   Button,
@@ -17,19 +21,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/index";
 
-type ChatMate = {
-  id: string;
-  name: string;
-  avatar: string;
-  lastMessage: string;
-};
-
-type Message = {
-  id: string;
-  senderId: string;
-  content: string;
-  timestamp: Date;
-};
+import { ChatMessage, ChatMate } from "@/utils/classes/index";
 
 const chatMates: ChatMate[] = [
   {
@@ -64,7 +56,7 @@ const chatMates: ChatMate[] = [
   },
 ];
 
-const initialMessages: Message[] = [
+const initialMessages: ChatMessage[] = [
   {
     id: "1",
     senderId: "1",
@@ -96,13 +88,13 @@ export const Chat = () => {
   const [selectedChatMate, setSelectedChatMate] = useState<ChatMate | null>(
     null
   );
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [newMessage, setNewMessage] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleSendMessage = () => {
     if (newMessage.trim() !== "") {
-      const message: Message = {
+      const message: ChatMessage = {
         id: Date.now().toString(),
         senderId: "me",
         content: newMessage,
@@ -182,7 +174,11 @@ export const Chat = () => {
               className="md:hidden"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             >
-              <Menu className="h-6 w-6" />
+              {isSidebarOpen ? (
+                <Cross1Icon className="h-6 w-6" />
+              ) : (
+                <HamburgerMenuIcon className="h-6 w-6" />
+              )}
             </Button>
             {selectedChatMate && (
               <>
@@ -240,7 +236,7 @@ export const Chat = () => {
               onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
             />
             <Button onClick={handleSendMessage}>
-              <Send className="h-4 w-4" />
+              <PaperPlaneIcon className="h-4 w-4" />
             </Button>
           </div>
         </div>

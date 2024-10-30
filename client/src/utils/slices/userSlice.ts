@@ -1,7 +1,7 @@
 import UserApi from "@/api/userApi";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { LoginFormField, RegisterFormField } from "@/utils/forms/authForms";
-import { User } from "@/utils/User";
+import { User } from "@/utils/classes/User";
 
 interface AuthState {
   loading: boolean;
