@@ -104,3 +104,8 @@ export const getUserInfo = async (req, res) => {
     return res.status(500).send("Internal Server Error");
   }
 };
+
+export const logout = (req, res) => {
+  res.cookie("jwt", "", { maxAge: 1 });
+  return res.status(200).send("Logged out");
+};

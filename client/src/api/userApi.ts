@@ -1,4 +1,9 @@
-import { LOGIN_ROUTE, REGISTER_ROUTE, USER_INFO_ROUTE } from "@/utils/constant";
+import {
+  LOGIN_ROUTE,
+  LOGOUT_ROUTE,
+  REGISTER_ROUTE,
+  USER_INFO_ROUTE,
+} from "@/utils/constant";
 import apiClient from "./axoisClient";
 
 const UserApi = {
@@ -15,6 +20,10 @@ const UserApi = {
     const request = await apiClient.get(USER_INFO_ROUTE);
     const response = request.data.user;
     return response;
+  },
+
+  logout: async () => {
+    return await apiClient.post(LOGOUT_ROUTE);
   },
 };
 
