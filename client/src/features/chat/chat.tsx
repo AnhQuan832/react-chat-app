@@ -5,7 +5,7 @@ import {
   HamburgerMenuIcon,
   Cross1Icon,
 } from "@radix-ui/react-icons";
-import { useAppSelector } from "@/app/hook";
+import { useAppSelector, useAppDispatch } from "@/app/hook";
 import {
   Button,
   Input,
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/index";
 
 import { ChatMessage, ChatMate } from "@/utils/classes/index";
+import { logout } from "@/utils/slices/userSlice";
 
 const chatMates: ChatMate[] = [
   {
@@ -85,6 +86,7 @@ const initialMessages: ChatMessage[] = [
 
 export const Chat = () => {
   const { user } = useAppSelector((state) => state.user);
+  const dispatch = useAppDispatch();
   const [selectedChatMate, setSelectedChatMate] = useState<ChatMate | null>(
     null
   );
@@ -105,7 +107,9 @@ export const Chat = () => {
     }
   };
 
-  const handleLogout = () => {};
+  const handleLogout = async () => {
+    await dispatch(logout());
+  };
 
   return (
     <div className="flex h-screen bg-gray-100">

@@ -31,7 +31,7 @@ function App() {
       }
     };
     if (!user) getUserData();
-  }, []);
+  }, [user, dispatch]);
 
   return (
     <BrowserRouter>
