@@ -1,9 +1,9 @@
 import "./App.css";
 import React, { useEffect } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { Chat } from "./features/chat/chat";
 import { Auth } from "./features/auth/auth";
 import { useAppDispatch, useAppSelector } from "./app/hook";
+import { Chat } from "./features/chat/chat";
 import { getUserInfo } from "./utils/slices/userSlice";
 
 const PrivateRoute = ({ children }) => {
@@ -19,19 +19,19 @@ const AuthRoute = ({ children }) => {
 };
 
 function App() {
-  // const { user } = useAppSelector((state) => state.user);
-  // const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state) => state.user);
+  const dispatch = useAppDispatch();
 
-  // useEffect(() => {
-  //   const getUserData = async () => {
-  //     try {
-  //       await dispatch(getUserInfo());
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   };
-  //   if (!user) getUserData();
-  // }, []);
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        await dispatch(getUserInfo());
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    if (!user) getUserData();
+  }, []);
 
   return (
     <BrowserRouter>
