@@ -1,4 +1,5 @@
 import { Server } from "socket.io";
+import Message from "./models/MessageModel.js";
 
 const setupSocket = (server) => {
   const io = new Server(server, {
@@ -21,7 +22,7 @@ const setupSocket = (server) => {
       console.log("No userId");
     }
 
-    socket.on("send-message", (data) => {
+    socket.on("sendMessage", (data) => {
       onSendMessage(data);
     });
 
@@ -31,6 +32,7 @@ const setupSocket = (server) => {
   });
 
   const onDisconnect = (socket) => {
+    console.log(`Disconnected: ${socket.id}`);
     for (const [userId, socketId] of userSocketMap.entries()) {
       if (socketId === socket.id) {
         userSocketMap.delete(userId);
@@ -40,16 +42,17 @@ const setupSocket = (server) => {
   };
 
   const onSendMessage = async (data) => {
-    const { senderId, recipientId, message } = data;
-    const recipientSocketId = userSocketMap.get(recipientId);
+    console.log("message data", data);
+    const { sender, recipient, content } = data;
+    const recipientSocketId = userSocketMap.get(recipient);
 
-    const createdMessage = await Message.create(message);
+    const createdMessage = await Message.create(data);
     const messageData = await Message.findById(createdMessage._id)
       .populate("sender", "id email name image")
       .populate("recipient", "id email name image");
 
     if (recipientSocketId) {
-      io.to(recipientSocketId).emit("receive-message", message);
+      io.to(recipientSocketId).emit("receiveMessage", content);
     }
   };
 };

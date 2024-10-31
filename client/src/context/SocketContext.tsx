@@ -1,40 +1,47 @@
 import { useAppSelector } from "@/app/hook";
 import { HOST } from "@/utils/constant";
-import React, { createContext, useContext, useEffect, useRef } from "react";
-import { io } from "socket.io-client";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { io, Socket } from "socket.io-client";
 
 export const SocketContext = createContext(null);
 
-export const useSocket = () => {
-  return useContext(SocketContext);
-};
-
 export const SocketProvider = ({ children }) => {
-  const socket = useRef<ReturnType<typeof io> | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
   const { user } = useAppSelector((state) => state.user);
 
   useEffect(() => {
     if (user) {
-      socket.current = io(HOST, {
+      const newSocket = io(HOST, {
         withCredentials: true,
         query: {
           userId: user.id,
         },
       });
 
+      newSocket.on("connect", () => {
+        console.log("Connected to socket server");
+      });
+
       const handleReceiveMessage = (message) => {
         console.log("Received message: ", message);
       };
 
-      socket.current.on("receive-message", handleReceiveMessage);
+      newSocket.on("receiveMessage", handleReceiveMessage);
+
+      setSocket(newSocket);
+
       return () => {
-        socket.current.disconnect();
+        newSocket.disconnect();
+        setSocket(null);
       };
     }
   }, [user]);
+
   return (
-    <SocketContext.Provider value={socket.current}>
-      {children}
-    </SocketContext.Provider>
+    <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>
   );
+};
+
+export const useSocket = () => {
+  return useContext(SocketContext);
 };

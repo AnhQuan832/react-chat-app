@@ -3,8 +3,8 @@ import React, { useEffect } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Auth } from "./features/auth/auth";
 import { useAppDispatch, useAppSelector } from "./app/hook";
-import { Chat } from "./features/chat/chat";
 import { getUserInfo } from "./utils/slices/userSlice";
+import { Chat } from "./features/chat/chat";
 
 const PrivateRoute = ({ children }) => {
   const { user } = useAppSelector((state) => state.user);
@@ -21,7 +21,6 @@ const AuthRoute = ({ children }) => {
 function App() {
   const { user } = useAppSelector((state) => state.user);
   const dispatch = useAppDispatch();
-
   useEffect(() => {
     const getUserData = async () => {
       try {

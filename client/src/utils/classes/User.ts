@@ -2,7 +2,7 @@ export class User {
   id: string;
   name: string;
   email: string;
-  image?: string;
+  image: string;
   token: string | undefined;
   constructor(
     id: string,

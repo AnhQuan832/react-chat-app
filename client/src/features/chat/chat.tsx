@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {} from "@/components/ui/avatar";
 import {
   PaperPlaneIcon,
@@ -21,94 +21,48 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/index";
 
-import { ChatMessage, ChatMate } from "@/utils/classes/index";
+import { ChatMessage } from "@/utils/classes/index";
 import { logout } from "@/utils/slices/userSlice";
-
-const chatMates: ChatMate[] = [
-  {
-    id: "1",
-    name: "Alice",
-    avatar: "/placeholder.svg?height=40&width=40",
-    lastMessage: "Hey, how are you?",
-  },
-  {
-    id: "2",
-    name: "Bob",
-    avatar: "/placeholder.svg?height=40&width=40",
-    lastMessage: "Did you see the game last night?",
-  },
-  {
-    id: "3",
-    name: "Charlie",
-    avatar: "/placeholder.svg?height=40&width=40",
-    lastMessage: "Meeting at 3 PM",
-  },
-  {
-    id: "4",
-    name: "Diana",
-    avatar: "/placeholder.svg?height=40&width=40",
-    lastMessage: "Thanks for your help!",
-  },
-  {
-    id: "5",
-    name: "Ethan",
-    avatar: "/placeholder.svg?height=40&width=40",
-    lastMessage: "Lets grab lunch sometime",
-  },
-];
-
-const initialMessages: ChatMessage[] = [
-  {
-    id: "1",
-    senderId: "1",
-    content: "Hey, how are you?",
-    timestamp: new Date("2023-05-01T10:00:00"),
-  },
-  {
-    id: "2",
-    senderId: "me",
-    content: "Im doing great, thanks! How about you?",
-    timestamp: new Date("2023-05-01T10:05:00"),
-  },
-  {
-    id: "3",
-    senderId: "1",
-    content: "Im good too. Did you finish the project?",
-    timestamp: new Date("2023-05-01T10:10:00"),
-  },
-  {
-    id: "4",
-    senderId: "me",
-    content: "Yes, I just submitted it. How about yours?",
-    timestamp: new Date("2023-05-01T10:15:00"),
-  },
-];
+import { MessageType } from "@/utils/classes/ChatMessage";
+import { getContacts, selectChatMate } from "@/utils/slices/messageSlice";
+import { useSocket } from "@/context/SocketContext";
 
 export const Chat = () => {
-  const { user } = useAppSelector((state) => state.user);
   const dispatch = useAppDispatch();
-  const [selectedChatMate, setSelectedChatMate] = useState<ChatMate | null>(
-    null
+  const { user } = useAppSelector((state) => state.user);
+  const { listContacts, selectedChatMate } = useAppSelector(
+    (state) => state.contact
   );
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+  const [messages] = useState<ChatMessage[]>();
   const [newMessage, setNewMessage] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const socket = useSocket();
 
-  const handleSendMessage = () => {
+  useEffect(() => {
+    dispatch(getContacts());
+  }, [dispatch]);
+
+  const handleSendMessage = async () => {
     if (newMessage.trim() !== "") {
       const message: ChatMessage = {
-        id: Date.now().toString(),
-        senderId: "me",
+        sender: user.id,
+        recipient: selectedChatMate.id,
+        messageType: MessageType.Text,
         content: newMessage,
         timestamp: new Date(),
+        fileUrl: undefined,
       };
-      setMessages([...messages, message]);
+      socket.emit("sendMessage", message);
       setNewMessage("");
     }
   };
 
   const handleLogout = async () => {
     await dispatch(logout());
+  };
+
+  const setSelectedChatMate = (chatMate) => {
+    dispatch(selectChatMate(chatMate));
   };
 
   return (
@@ -142,34 +96,36 @@ export const Chat = () => {
           {/* <h2 className="text-xl font-bold">Chats</h2> */}
         </div>
         <ScrollArea className="h-[calc(100vh-5rem)]">
-          {chatMates.map((chatMate) => (
-            <div
-              key={chatMate.id}
-              className={`p-4 hover:bg-gray-100 cursor-pointer ${
-                selectedChatMate?.id === chatMate.id ? "bg-gray-100" : ""
-              }`}
-              onClick={() => setSelectedChatMate(chatMate)}
-            >
-              <div className="flex items-center space-x-4">
-                <Avatar>
-                  <AvatarImage src={chatMate.avatar} alt={chatMate.name} />
-                  <AvatarFallback>{chatMate.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium">{chatMate.name}</p>
-                  <p className="text-sm text-gray-500 truncate">
-                    {chatMate.lastMessage}
-                  </p>
+          {listContacts && listContacts.length > 0 ? (
+            listContacts.map((chatMate, index) => (
+              <div
+                key={chatMate.id || index}
+                className={`p-4 hover:bg-gray-100 cursor-pointer ${
+                  selectedChatMate?.id === chatMate.id ? "bg-gray-100" : ""
+                }`}
+                onClick={() => setSelectedChatMate(chatMate)}
+              >
+                <div className="flex items-center space-x-4">
+                  <Avatar>
+                    <AvatarImage src={chatMate.avatar} alt={chatMate.name} />
+                    <AvatarFallback>{chatMate.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{chatMate.name}</p>
+                    <p className="text-sm text-gray-500 truncate">
+                      {chatMate.lastMessage}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="p-4 text-gray-500">No contacts available</p>
+          )}
         </ScrollArea>
       </div>
 
-      {/* Chat Space */}
       <div className="flex-1 flex flex-col">
-        {/* Chat Header */}
         <div className="bg-white p-4 border-b flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Button
@@ -201,18 +157,17 @@ export const Chat = () => {
           </div>
         </div>
 
-        {/* Messages */}
         <ScrollArea className="flex-1 p-4">
-          {messages.map((message) => (
+          {(messages || []).map((message) => (
             <div
-              key={message.id}
+              key={message.timestamp.getTime()}
               className={`mb-4 ${
-                message.senderId === "me" ? "text-right" : "text-left"
+                message.sender === "me" ? "text-right" : "text-left"
               }`}
             >
               <div
                 className={`inline-block p-2 rounded-lg ${
-                  message.senderId === "me"
+                  message.sender === "me"
                     ? "bg-blue-500 text-white"
                     : "bg-gray-200"
                 }`}
@@ -229,7 +184,6 @@ export const Chat = () => {
           ))}
         </ScrollArea>
 
-        {/* Message Input */}
         <div className="bg-white p-4 border-t">
           <div className="flex space-x-2">
             <Input

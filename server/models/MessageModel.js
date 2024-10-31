@@ -4,17 +4,17 @@ const messageSchema = new mongoose.Schema({
   sender: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "user",
-    required: [true, "Sender is required"],
+    required: [false, "Sender is required"],
   },
   recipient: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "user",
-    required: [true, "Receiver is required"],
+    required: [false, "Receiver is required"],
   },
   messageType: {
     type: String,
     enum: ["text", "file"],
-    required: [true, "Message type is required"],
+    required: [false, "Message type is required"],
   },
   content: {
     type: String,
