@@ -4,7 +4,7 @@ export class ChatMessage {
   messageType: MessageType;
   content: string;
   fileUrl?: string;
-  timestamp: Date;
+  timestamp: number;
 }
 
 export class ChatMate {

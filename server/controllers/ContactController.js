@@ -1,5 +1,6 @@
 import User from "../models/UserModel.js";
 import jwt from "jsonwebtoken";
+import Message from "../models/MessageModel.js";
 
 export const getContacts = async (req, res) => {
   try {
@@ -59,5 +60,32 @@ export const getContactById = async (req, res) => {
     return res.status(200).json(contact);
   } catch (error) {
     return res.status(500).send("Internal Server Error");
+  }
+};
+
+export const getMessages = async (req, res) => {
+  try {
+    const token = req.cookies.jwt;
+    if (!token) {
+      return res.status(401).send("Unauthorized");
+    }
+    const currentUser = jwt.decode(token, process.env.JWT_SECRET);
+
+    if (!currentUser) {
+      return res.status(401).send("Unauthorized");
+    }
+
+    const { id } = currentUser;
+    const { contactId } = req.params;
+    const listMessage = await Message.find({
+      $or: [
+        { sender: id, recipient: contactId },
+        { sender: contactId, recipient: id },
+      ],
+    }).sort({ timestamp: 1 });
+
+    return res.status(200).json(listMessage);
+  } catch (error) {
+    return res.status(500).send(error);
   }
 };

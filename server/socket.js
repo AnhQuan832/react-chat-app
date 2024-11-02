@@ -52,7 +52,7 @@ const setupSocket = (server) => {
       .populate("recipient", "id email name image");
 
     if (recipientSocketId) {
-      io.to(recipientSocketId).emit("receiveMessage", content);
+      io.to(recipientSocketId).emit("receiveMessage", data);
     }
   };
 };

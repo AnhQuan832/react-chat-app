@@ -1,5 +1,6 @@
-import { useAppSelector } from "@/app/hook";
+import { useAppDispatch, useAppSelector } from "@/app/hook";
 import { HOST } from "@/utils/constant";
+import { addMessage } from "@/utils/slices/messageSlice";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
@@ -8,7 +9,7 @@ export const SocketContext = createContext(null);
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const { user } = useAppSelector((state) => state.user);
-
+  const dispatch = useAppDispatch();
   useEffect(() => {
     if (user) {
       const newSocket = io(HOST, {
@@ -23,7 +24,7 @@ export const SocketProvider = ({ children }) => {
       });
 
       const handleReceiveMessage = (message) => {
-        console.log("Received message: ", message);
+        dispatch(addMessage(message));
       };
 
       newSocket.on("receiveMessage", handleReceiveMessage);

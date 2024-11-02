@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {} from "@/components/ui/avatar";
 import {
   PaperPlaneIcon,
@@ -24,23 +24,32 @@ import {
 import { ChatMessage } from "@/utils/classes/index";
 import { logout } from "@/utils/slices/userSlice";
 import { MessageType } from "@/utils/classes/ChatMessage";
-import { getContacts, selectChatMate } from "@/utils/slices/messageSlice";
+import {
+  addMessage,
+  getContacts,
+  getMessage,
+  selectChatMate,
+} from "@/utils/slices/messageSlice";
 import { useSocket } from "@/context/SocketContext";
+import moment from "moment";
 
 export const Chat = () => {
   const dispatch = useAppDispatch();
+  const socket = useSocket();
+  const scrollRef = useRef<HTMLDivElement>();
   const { user } = useAppSelector((state) => state.user);
-  const { listContacts, selectedChatMate } = useAppSelector(
+  const { listContacts, selectedChatMate, messages } = useAppSelector(
     (state) => state.contact
   );
-  const [messages] = useState<ChatMessage[]>();
   const [newMessage, setNewMessage] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const socket = useSocket();
 
   useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: "smooth" });
+    }
     dispatch(getContacts());
-  }, [dispatch]);
+  }, [dispatch, messages]);
 
   const handleSendMessage = async () => {
     if (newMessage.trim() !== "") {
@@ -49,10 +58,11 @@ export const Chat = () => {
         recipient: selectedChatMate.id,
         messageType: MessageType.Text,
         content: newMessage,
-        timestamp: new Date(),
+        timestamp: new Date().getTime(),
         fileUrl: undefined,
       };
       socket.emit("sendMessage", message);
+      dispatch(addMessage(message));
       setNewMessage("");
     }
   };
@@ -61,8 +71,33 @@ export const Chat = () => {
     await dispatch(logout());
   };
 
-  const setSelectedChatMate = (chatMate) => {
+  const setSelectedChatMate = async (chatMate) => {
     dispatch(selectChatMate(chatMate));
+    if (!messages[chatMate.id]) await dispatch(getMessage(chatMate.id));
+  };
+
+  const renderMessage = () => {
+    return (messages[selectedChatMate?.id] || []).map((message, index) => (
+      <div
+        key={index}
+        className={`mb-4 ${
+          message.sender === user.id ? "text-right" : "text-left"
+        }`}
+      >
+        <div
+          className={`inline-block p-2 rounded-lg ${
+            message.sender === user.id
+              ? "bg-blue-500 text-white"
+              : "bg-gray-200"
+          }`}
+        >
+          {message.content}
+        </div>
+        <div className="text-xs text-gray-500 mt-1">
+          {moment(message.timestamp).format("LT")}
+        </div>
+      </div>
+    ));
   };
 
   return (
@@ -158,30 +193,8 @@ export const Chat = () => {
         </div>
 
         <ScrollArea className="flex-1 p-4">
-          {(messages || []).map((message) => (
-            <div
-              key={message.timestamp.getTime()}
-              className={`mb-4 ${
-                message.sender === "me" ? "text-right" : "text-left"
-              }`}
-            >
-              <div
-                className={`inline-block p-2 rounded-lg ${
-                  message.sender === "me"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200"
-                }`}
-              >
-                {message.content}
-              </div>
-              <div className="text-xs text-gray-500 mt-1">
-                {message.timestamp.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </div>
-            </div>
-          ))}
+          {renderMessage()}
+          <div ref={scrollRef}></div>
         </ScrollArea>
 
         <div className="bg-white p-4 border-t">

@@ -2,14 +2,14 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ChatMate, ChatMessage } from "../classes";
 import contactApi from "@/api/contactApi";
 
-interface MessageState {
-  messages: Map<string, ChatMessage>;
-  listContacts: ChatMate[];
-  selectedChatMate: ChatMate;
-}
+// interface MessageState {
+//   messages: ;
+//   listContacts: ChatMate[];
+//   selectedChatMate: ChatMate;
+// }
 
-const initialState: MessageState = {
-  messages: new Map<string, ChatMessage>(),
+const initialState = {
+  messages: {},
   listContacts: [],
   selectedChatMate: null,
 };
@@ -19,7 +19,8 @@ const messageSlice = createSlice({
   initialState,
   reducers: {
     addMessage: (state, action: PayloadAction<ChatMessage>) => {
-      state.messages.set(state.selectedChatMate.id, action.payload);
+      const messages = state.messages[state.selectedChatMate.id];
+      state.messages[state.selectedChatMate.id] = [...messages, action.payload];
     },
     selectChatMate: (state, action: PayloadAction<ChatMate>) => {
       state.selectedChatMate = action.payload;
@@ -29,6 +30,9 @@ const messageSlice = createSlice({
     builder.addCase(getContacts.fulfilled, (state, action) => {
       state.listContacts = action.payload;
     });
+    builder.addCase(getMessage.fulfilled, (state, action) => {
+      state.messages[state.selectedChatMate.id] = action.payload;
+    });
   },
 });
 
@@ -36,6 +40,14 @@ export const getContacts = createAsyncThunk(
   "messages/getContacts",
   async (params) => {
     const response = await contactApi.getContacts(params);
+    return response.data;
+  }
+);
+
+export const getMessage = createAsyncThunk(
+  "messages/getMessage",
+  async (chatMateId: string) => {
+    const response = await contactApi.getMessages(chatMateId);
     return response.data;
   }
 );

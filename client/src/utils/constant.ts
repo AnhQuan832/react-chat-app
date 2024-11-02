@@ -10,3 +10,4 @@ export const USER_INFO_ROUTE = `${AUTH_ROUTE}/user-info`;
 export const LOGOUT_ROUTE = `${AUTH_ROUTE}/logout`;
 
 export const GET_CONTACTS_ROUTE = `${MESSAGE_ROUTE}/search`;
+export const GET_MESSAGES_ROUTE = `${MESSAGE_ROUTE}/messages`;

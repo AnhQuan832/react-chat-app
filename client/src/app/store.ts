@@ -1,7 +1,9 @@
 import { configureStore } from "@reduxjs/toolkit";
 import userReducer from "@/utils/slices/userSlice";
 import messageSlice from "@/utils/slices/messageSlice";
+import { enableMapSet } from "immer";
 
+enableMapSet();
 const rootReducer = {
   user: userReducer,
   contact: messageSlice,
@@ -12,6 +14,7 @@ const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
+      immer: true,
     }),
 });
 
